@@ -11,6 +11,8 @@ ddm_tx_bias = []
 ddm_tx_power = []
 ddm_rx_power = []
 
+err_num = ""
+
 # init event
 return_event = "<Return>"
 
@@ -18,18 +20,16 @@ return_event = "<Return>"
 class Application(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("DDM Conversion - Tkinter")
-        self.minsize(width=100, height=100)
+        self.title("DDM & BER Conversion - Tkinter")
+        self.minsize(width=100, height=225)
         self.resizable(0, 0)
 
         # define widgets
         # DDM Temperature
         self.lbl_ddm_temp = tk.Label(self, text="DDM Temperature (0x):")
         self.ddm_temp_msb = tk.Entry(self, width=10)
-        # self.ddm_temp_msb.bind(return_event, self.ddm_temp_changed)
         self.ddm_temp_msb.bind(return_event, lambda event, ddm=ddm_type[0]: self.ddm_changed(event, ddm_type[0]))
         self.ddm_temp_lsb = tk.Entry(self, width=10)
-        # self.ddm_temp_lsb.bind(return_event, self.ddm_temp_changed)
         self.ddm_temp_lsb.bind(return_event, lambda event, ddm=ddm_type[0]: self.ddm_changed(event, ddm_type[0]))
         self.lbl1 = tk.Label(self, text="==>>")
         self.ddm_temp_value = tk.Text(self, height=1, width=8)
@@ -75,70 +75,79 @@ class Application(tk.Tk):
         self.ddm_rx_value = tk.Text(self, height=1, width=8)
         self.unit5 = tk.Label(self, text="dBm")
 
-        # # BER
-        # self.lbl_ber_conv = tk.Label(self, text="BER-CONVERSION:")
-        # self.lbl_data_rate = tk.Label(self, text="Data Rate")
-        #
-        # variable = tk.StringVar(self)
-        # variable.set(data_rate[0])    # set default value
-        # self.data_rate_dropdown = tk.OptionMenu(self, variable, *data_rate)
-        #
-        # self.lbl_err_num = tk.Label(self, text="Err num (0x)")
-        # self.err_num = tk.Entry(self, width=12)
-        # self.lbl_trf_time = tk.Label(self, text="Test Time")
-        # self.trf_time = tk.Entry(self, width=10)
-        # self.lbl_ber = tk.Label(self, text="BER = ")
-        # self.ber_value = tk.Text(self, height=1, width=8)
+        # BER
+        self.lbl_ber_conv = tk.Label(self, text="BER-CONVERSION:", width=15, relief="sunken")
+        self.lbl_data_rate = tk.Label(self, text="Data Rate:", padx=0)
+
+        global data_rate
+        options_menu = tk.StringVar(self)
+        options_menu.set(data_rate[0])  # set default value
+        self.data_rate_dropdown = tk.OptionMenu(self, options_menu, *data_rate, command=self.get_data_rate)
+        self.data_rate = tk.Text(self, height=1, width=7)
+        self.data_rate.delete("1.0", "end")
+        self.data_rate.insert("insert", data_rate[0])
+
+        self.lbl_err_num = tk.Label(self, text="Err num (0x):")
+        self.err_num = tk.Entry(self, width=12)
+        self.err_num.bind(return_event, self.ber_change)
+        self.lbl_trf_time = tk.Label(self, text="Test Time:")
+        self.trf_time = tk.Entry(self, width=10)
+        self.trf_time.insert(0, "60")
+        self.lbl_ber = tk.Label(self, text="BER = ")
+        self.ber_value = tk.Text(self, height=1, width=9)
 
         # widgets position
         # DDM Temperature
-        self.lbl_ddm_temp.grid(row=0, column=1)
-        self.ddm_temp_msb.grid(row=0, column=2, pady=5)
-        self.ddm_temp_lsb.grid(row=0, column=3, padx=3, pady=5)
-        self.lbl1.grid(row=0, column=4, pady=5)
-        self.ddm_temp_value.grid(row=0, column=5, pady=5)
-        self.unit1.grid(row=0, column=6, pady=5)
+        self.lbl_ddm_temp.grid(row=0, column=0)
+        self.ddm_temp_msb.grid(row=0, column=1, pady=5)
+        self.ddm_temp_lsb.grid(row=0, column=2, padx=3, pady=5)
+        self.lbl1.grid(row=0, column=3, pady=5)
+        self.ddm_temp_value.grid(row=0, column=4, pady=5)
+        self.unit1.grid(row=0, column=5, pady=5)
 
         # DDM Voltage
-        self.lbl_ddm_volt.grid(row=2, column=1, pady=5)
-        self.ddm_volt_msb.grid(row=2, column=2, pady=5)
-        self.ddm_volt_lsb.grid(row=2, column=3, padx=3, pady=5)
-        self.lbl2.grid(row=2, column=4, pady=5)
-        self.ddm_volt_value.grid(row=2, column=5, pady=5)
-        self.unit2.grid(row=2, column=6, pady=5)
+        self.lbl_ddm_volt.grid(row=2, column=0, pady=5)
+        self.ddm_volt_msb.grid(row=2, column=1, pady=5)
+        self.ddm_volt_lsb.grid(row=2, column=2, padx=3, pady=5)
+        self.lbl2.grid(row=2, column=3, pady=5)
+        self.ddm_volt_value.grid(row=2, column=4, pady=5)
+        self.unit2.grid(row=2, column=5, pady=5)
 
         # DDM Tx Bias Current
-        self.lbl_ddm_bias.grid(row=3, column=1, pady=5)
-        self.ddm_bias_msb.grid(row=3, column=2, pady=5)
-        self.ddm_bias_lsb.grid(row=3, column=3, padx=3, pady=5)
-        self.lbl3.grid(row=3, column=4, pady=5)
-        self.ddm_bias_value.grid(row=3, column=5, pady=5)
-        self.unit3.grid(row=3, column=6, pady=5)
+        self.lbl_ddm_bias.grid(row=3, column=0, pady=5)
+        self.ddm_bias_msb.grid(row=3, column=1, pady=5)
+        self.ddm_bias_lsb.grid(row=3, column=2, padx=3, pady=5)
+        self.lbl3.grid(row=3, column=3, pady=5)
+        self.ddm_bias_value.grid(row=3, column=4, pady=5)
+        self.unit3.grid(row=3, column=5, pady=5)
 
         # DDM Tx Power
-        self.lbl_ddm_tx.grid(row=4, column=1, pady=5)
-        self.ddm_tx_msb.grid(row=4, column=2, pady=5)
-        self.ddm_tx_lsb.grid(row=4, column=3, padx=3, pady=5)
-        self.lbl4 .grid(row=4, column=4, pady=5)
-        self.ddm_tx_value.grid(row=4, column=5, pady=5)
-        self.unit4.grid(row=4, column=6, pady=5)
+        self.lbl_ddm_tx.grid(row=4, column=0, pady=5)
+        self.ddm_tx_msb.grid(row=4, column=1, pady=5)
+        self.ddm_tx_lsb.grid(row=4, column=2, padx=3, pady=5)
+        self.lbl4 .grid(row=4, column=3, pady=5)
+        self.ddm_tx_value.grid(row=4, column=4, pady=5)
+        self.unit4.grid(row=4, column=5, pady=5)
 
         # DDM Rx Power
-        self.lbl_ddm_rx.grid(row=5, column=1, pady=5)
-        self.ddm_rx_msb.grid(row=5, column=2, pady=5)
-        self.ddm_rx_lsb.grid(row=5, column=3, padx=3, pady=5)
-        self.lbl5.grid(row=5, column=4, pady=5)
-        self.ddm_rx_value.grid(row=5, column=5, pady=5)
-        self.unit5.grid(row=5, column=6, pady=5)
+        self.lbl_ddm_rx.grid(row=5, column=0, pady=5)
+        self.ddm_rx_msb.grid(row=5, column=1, pady=5)
+        self.ddm_rx_lsb.grid(row=5, column=2, padx=3, pady=5)
+        self.lbl5.grid(row=5, column=3, pady=5)
+        self.ddm_rx_value.grid(row=5, column=4, pady=5)
+        self.unit5.grid(row=5, column=5, pady=5)
 
-        # # BER
-        # self.lbl_ber_conv.grid(row=6, column=1, pady=5)
-        # self.lbl_data_rate.grid(row=7, column=1, padx=5)
-        # self.data_rate_dropdown.grid(row=8, column=1, pady=5)
-        # self.lbl_err_num.grid(row=8, column=2, padx=5)
-        # self.err_num.grid(row=8, column=3, padx=5)
-        # self.lbl_trf_time.grid(row=8, column=4, padx=5)
-        # self.trf_time.grid(row=8, column=5, padx=5)
+        # BER
+        self.lbl_ber_conv.grid(row=6, column=0, pady=5, ipadx=1)
+        self.lbl_data_rate.grid(row=6, column=1, padx=5)
+        self.data_rate_dropdown.grid(row=6, column=2, pady=5)
+        self.lbl_err_num.grid(row=7, column=0, padx=5)
+        self.err_num.grid(row=7, column=1, padx=5)
+        self.data_rate.grid(row=7, column=2, padx=5, pady=5)
+        self.lbl_trf_time.grid(row=6, column=3, padx=5)
+        self.trf_time.grid(row=6, column=4, padx=5)
+        self.lbl_ber.grid(row=7, column=3, padx=5)
+        self.ber_value.grid(row=7, column=4, padx=5)
 
     def ddm_changed(self, event, ddm):
         global ddm_temp, ddm_volt, ddm_tx_bias, ddm_tx_power, ddm_rx_power
@@ -152,17 +161,20 @@ class Application(tk.Tk):
             print("DDM Temperature")
             msb = self.ddm_temp_msb.get()
             lsb = self.ddm_temp_lsb.get()
-            if msb == "":
-                self.ddm_temp_msb.insert(0, "00")
-                ddm_temp.append(int("0x" + "00", 16))
-            else:
-                ddm_temp.append(int("0x" + msb, 16))
-            if lsb == "":
-                self.ddm_temp_lsb.insert(0, "00")
-                ddm_temp.append(int("0x" + "00", 16))
-            else:
-                ddm_temp.append(int("0x" + lsb, 16))
-            result = self.calculate_dom_value(dom_bytes=ddm_temp, dom_type=ddm_type[0])
+            try:
+                if msb == "":
+                    self.ddm_temp_msb.insert(0, "00")
+                    ddm_temp.append(int("0x" + "00", 16))
+                else:
+                    ddm_temp.append(int("0x" + msb, 16))
+                if lsb == "":
+                    self.ddm_temp_lsb.insert(0, "00")
+                    ddm_temp.append(int("0x" + "00", 16))
+                else:
+                    ddm_temp.append(int("0x" + lsb, 16))
+                result = self.calculate_dom_value(dom_bytes=ddm_temp, dom_type=ddm_type[0])
+            except ValueError:
+                result = "inf"
             print(result)
             self.ddm_temp_value.delete("1.0", "end")
             self.ddm_temp_value.insert("insert", result)
@@ -242,6 +254,30 @@ class Application(tk.Tk):
             print(result)
             self.ddm_rx_value.delete("1.0", "end")
             self.ddm_rx_value.insert("insert", result)
+
+    def get_data_rate(self, value):
+        self.data_rate.delete('1.0', 'end')
+        self.data_rate.insert("insert", value)
+        print(value)
+
+    def ber_change(self, event):
+        print("Calculate BER...")
+        num_err = int("0x" + self.err_num.get(), 16)
+        trf_rate = self.data_rate.get("1.0", "end").strip()
+        test_time = self.trf_time.get()
+
+        if test_time == "" or test_time == "00":
+            self.trf_time.delete(0, 'deleted')
+            test_time = self.trf_time.insert(0, "60")
+        try:
+            result = self.calculate_ber(num_error=num_err,
+                                        test_data_rate=trf_rate,
+                                        test_time=int(test_time))
+        except ValueError:
+            result = "inf"
+        print(result)
+        self.ber_value.delete("1.0", "end")
+        self.ber_value.insert("insert", result)
 
     def calculate_dom_value(self, dom_bytes, dom_type):
         """
