@@ -85,7 +85,9 @@ class Application(tk.Tk):
         self.data_rate_dropdown = tk.OptionMenu(self, options_menu, *data_rate, command=self.get_data_rate)
         self.data_rate = tk.Text(self, height=1, width=7)
         self.data_rate.delete("1.0", "end")
+        self.data_rate.config(state='normal')
         self.data_rate.insert("insert", data_rate[0])
+        self.data_rate.config(state='disabled')
 
         self.lbl_err_num = tk.Label(self, text="Err num (0x):")
         self.err_num = tk.Entry(self, width=12)
@@ -159,8 +161,8 @@ class Application(tk.Tk):
 
         if ddm_type[0] == ddm:
             print("DDM Temperature")
-            msb = self.ddm_temp_msb.get()
-            lsb = self.ddm_temp_lsb.get()
+            msb = self.limit_user_input(self.ddm_temp_msb)
+            lsb = self.limit_user_input(self.ddm_temp_lsb)
             try:
                 if msb == "":
                     self.ddm_temp_msb.insert(0, "00")
@@ -176,93 +178,137 @@ class Application(tk.Tk):
             except ValueError:
                 result = "inf"
             print(result)
+            self.ddm_temp_value.config(state='normal')
             self.ddm_temp_value.delete("1.0", "end")
             self.ddm_temp_value.insert("insert", result)
+            self.ddm_temp_value.config(state='disabled')
 
         if ddm_type[1] == ddm:
             print("DDM Voltage")
-            msb = self.ddm_volt_msb.get()
-            lsb = self.ddm_volt_lsb.get()
-            if msb == "":
-                self.ddm_volt_msb.insert(0, "00")
-                ddm_volt.append(int("0x" + "00", 16))
-            else:
-                ddm_volt.append(int("0x" + msb, 16))
-            if lsb == "":
-                self.ddm_volt_lsb.insert(0, "00")
-                ddm_volt.append(int("0x" + "00", 16))
-            else:
-                ddm_volt.append(int("0x" + lsb, 16))
-            result = self.calculate_dom_value(dom_bytes=ddm_volt, dom_type=ddm_type[1])
+            msb = self.limit_user_input(self.ddm_volt_msb)
+            lsb = self.limit_user_input(self.ddm_volt_lsb)
+            try:
+                if msb == "":
+                    self.ddm_volt_msb.insert(0, "00")
+                    ddm_volt.append(int("0x" + "00", 16))
+                else:
+                    ddm_volt.append(int("0x" + msb, 16))
+                if lsb == "":
+                    self.ddm_volt_lsb.insert(0, "00")
+                    ddm_volt.append(int("0x" + "00", 16))
+                else:
+                    ddm_volt.append(int("0x" + lsb, 16))
+                result = self.calculate_dom_value(dom_bytes=ddm_volt, dom_type=ddm_type[1])
+            except ValueError:
+                result = "inf"
             print(result)
+            self.ddm_volt_value.config(state='normal')
             self.ddm_volt_value.delete("1.0", "end")
             self.ddm_volt_value.insert("insert", result)
+            self.ddm_volt_value.config(state='disabled')
 
         if ddm_type[2] == ddm:
             print("DDM Tx Bias Current")
-            msb = self.ddm_bias_msb.get()
-            lsb = self.ddm_bias_lsb.get()
-            if msb == "":
-                self.ddm_bias_msb.insert(0, "00")
-                ddm_tx_bias.append(int("0x" + "00", 16))
-            else:
-                ddm_tx_bias.append(int("0x" + msb, 16))
-            if lsb == "":
-                self.ddm_bias_lsb.insert(0, "00")
-                ddm_tx_bias.append(int("0x" + "00", 16))
-            else:
-                ddm_tx_bias.append(int("0x" + lsb, 16))
-            result = self.calculate_dom_value(dom_bytes=ddm_tx_bias, dom_type=ddm_type[2])
+            msb = self.limit_user_input(self.ddm_bias_msb)
+            lsb = self.limit_user_input(self.ddm_bias_lsb)
+            try:
+                if msb == "":
+                    self.ddm_bias_msb.insert(0, "00")
+                    ddm_tx_bias.append(int("0x" + "00", 16))
+                else:
+                    ddm_tx_bias.append(int("0x" + msb, 16))
+                if lsb == "":
+                    self.ddm_bias_lsb.insert(0, "00")
+                    ddm_tx_bias.append(int("0x" + "00", 16))
+                else:
+                    ddm_tx_bias.append(int("0x" + lsb, 16))
+                result = self.calculate_dom_value(dom_bytes=ddm_tx_bias, dom_type=ddm_type[2])
+            except ValueError:
+                result = "inf"
             print(result)
+            self.ddm_bias_value.config(state='normal')
             self.ddm_bias_value.delete("1.0", "end")
             self.ddm_bias_value.insert("insert", result)
+            self.ddm_bias_value.config(state='disabled')
 
         if ddm_type[3] == ddm:
             print("DDM Tx Power")
-            msb = self.ddm_tx_msb.get()
-            lsb = self.ddm_tx_lsb.get()
-            if msb == "":
-                self.ddm_tx_msb.insert(0, "00")
-                ddm_tx_power.append(int("0x" + "00", 16))
-            else:
-                ddm_tx_power.append(int("0x" + msb, 16))
-            if lsb == "":
-                self.ddm_bias_lsb.insert(0, "00")
-                ddm_tx_power.append(int("0x" + "00", 16))
-            else:
-                ddm_tx_power.append(int("0x" + lsb, 16))
-            result = self.calculate_dom_value(dom_bytes=ddm_tx_power, dom_type=ddm_type[3])
+            msb = self.limit_user_input(self.ddm_tx_msb)
+            lsb = self.limit_user_input(self.ddm_tx_lsb)
+            try:
+                if msb == "":
+                    self.ddm_tx_msb.insert(0, "00")
+                    ddm_tx_power.append(int("0x" + "00", 16))
+                else:
+                    ddm_tx_power.append(int("0x" + msb, 16))
+                if lsb == "":
+                    self.ddm_tx_lsb.insert(0, "00")
+                    ddm_tx_power.append(int("0x" + "00", 16))
+                else:
+                    ddm_tx_power.append(int("0x" + lsb, 16))
+                result = self.calculate_dom_value(dom_bytes=ddm_tx_power, dom_type=ddm_type[3])
+            except ValueError:
+                result = "inf"
             print(result)
+            self.ddm_tx_value.config(state='normal')
             self.ddm_tx_value.delete("1.0", "end")
             self.ddm_tx_value.insert("insert", result)
+            self.ddm_tx_value.config(state='disabled')
 
         if ddm_type[4] == ddm:
             print("DDM Rx Power")
-            msb = self.ddm_rx_msb.get()
-            lsb = self.ddm_rx_lsb.get()
-            if msb == "":
-                self.ddm_rx_msb.insert(0, "00")
-                ddm_rx_power.append(int("0x" + "00", 16))
-            else:
-                ddm_rx_power.append(int("0x" + msb, 16))
-            if lsb == "":
-                self.ddm_rx_lsb.insert(0, "00")
-                ddm_rx_power.append(int("0x" + "00", 16))
-            else:
-                ddm_rx_power.append(int("0x" + lsb, 16))
-            result = self.calculate_dom_value(dom_bytes=ddm_rx_power, dom_type=ddm_type[4])
+            msb = self.limit_user_input(self.ddm_rx_msb)
+            lsb = self.limit_user_input(self.ddm_rx_lsb)
+            try:
+                if msb == "":
+                    self.ddm_rx_msb.insert(0, "00")
+                    ddm_rx_power.append(int("0x" + "00", 16))
+                else:
+                    ddm_rx_power.append(int("0x" + msb, 16))
+                if lsb == "":
+                    self.ddm_rx_lsb.insert(0, "00")
+                    ddm_rx_power.append(int("0x" + "00", 16))
+                else:
+                    ddm_rx_power.append(int("0x" + lsb, 16))
+                result = self.calculate_dom_value(dom_bytes=ddm_rx_power, dom_type=ddm_type[4])
+            except ValueError:
+                result = "inf"
             print(result)
+            self.ddm_rx_value.config(state='normal')
             self.ddm_rx_value.delete("1.0", "end")
             self.ddm_rx_value.insert("insert", result)
+            self.ddm_rx_value.config(state='disabled')
+
+    def limit_user_input(self, text):
+        text_in = text.get()
+        if len(text_in) > 2:
+            text.delete(0, 'end')
+            text.insert(0, text_in[:2])
+            return text_in[:2]
+        elif len(text_in) == 1:
+            text.delete(0, 'end')
+            text.insert(0, "0" + text_in)
+            return "0" + text_in
+        else:
+            text.delete(0, 'end')
+            text.insert(0, text_in)
+            return text_in
 
     def get_data_rate(self, value):
+        self.data_rate.config(state='normal')
         self.data_rate.delete('1.0', 'end')
         self.data_rate.insert("insert", value)
+        self.data_rate.config(state='disabled')
         print(value)
 
     def ber_change(self, event):
         print("Calculate BER...")
-        num_err = int("0x" + self.err_num.get(), 16)
+        try:
+            num_err = int("0x" + self.err_num.get(), 16)
+        except ValueError:
+            self.err_num.delete(0, 'end')
+            self.err_num.insert(0, '00')
+            num_err = int("0x00", 16)
         trf_rate = self.data_rate.get("1.0", "end").strip()
         test_time = self.trf_time.get()
 
