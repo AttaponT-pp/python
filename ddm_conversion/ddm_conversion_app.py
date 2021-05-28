@@ -1,5 +1,7 @@
 import tkinter as tk
 import math
+import base64, os
+from icon import img
 
 # init parameters
 ddm_type = ["temperature", "supply_voltage", "tx_bias_current", "tx_power", "rx_power"]
@@ -23,6 +25,7 @@ class Application(tk.Tk):
         self.title("DDM & BER Conversion - Tkinter")
         self.minsize(width=100, height=225)
         self.resizable(0, 0)
+        self.icon_setup()
 
         # define widgets
         # DDM Temperature
@@ -390,6 +393,14 @@ class Application(tk.Tk):
             n_bits = -1
         ber = float(num_error) / float(n_bits)
         return '{0:.2e}'.format(ber)
+
+    def icon_setup(self):
+        tmp_ico = "tmp.ico"
+        tmp = open(tmp_ico, "wb+")
+        tmp.write(base64.b64decode(img))
+        tmp.close()
+        self.iconbitmap(tmp_ico)
+        os.remove(tmp_ico)
 
 
 app = Application()

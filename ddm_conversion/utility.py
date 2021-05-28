@@ -1,5 +1,6 @@
 import math
-
+import re
+import base64
 
 def calculate_dom_value(dom_bytes, dom_type):
     """
@@ -87,10 +88,22 @@ def calculate_ber(num_error, test_data_rate, test_time):
     return '{0:.2e}'.format(ber)
 
 
-if __name__ == '__main__':
-    ddm_type = ['temperature', 'supply_voltage', 'tx_bias_current', 'tx_power', 'rx_power']
-    ddm_bytes = [int('0x' + '41', 16), int('0x' + '41', 16)]
+def convert_ico_to_base64(ico):
+    open_icon = open(ico, "rb")  # qq.icon is the icon you want to put in
+    b64str = base64.b64encode(open_icon.read())  # Read in base64 format
+    open_icon.close()
+    write_data = "img=%s" % b64str
+    f = open("icon.py", "w+")  # Write the data read above into the img array of qq.py
+    f.write(write_data)
+    f.close()
 
-    ddm_value = calculate_dom_value(dom_bytes=ddm_bytes, dom_type=ddm_type[3])
-    print(ddm_value)
+
+if __name__ == '__main__':
+    # ddm_type = ['temperature', 'supply_voltage', 'tx_bias_current', 'tx_power', 'rx_power']
+    # ddm_bytes = [int('0x' + '41', 16), int('0x' + '41', 16)]
+    #
+    # ddm_value = calculate_dom_value(dom_bytes=ddm_bytes, dom_type=ddm_type[3])
+    # print(ddm_value)
+    ico_name = "calculator.ico"
+    convert_ico_to_base64(ico_name)
 
