@@ -1,9 +1,8 @@
 import os
-import ctypes
-from win32ctypes import pywintypes
-from win32 import win32gui
-from win32.lib import win32con
-from win32 import win32api
+
+from win32ctypes.pywin32.pywintypes import error
+import win32con
+import win32api
 
 from time import sleep
 from random import randint
@@ -25,15 +24,14 @@ def set_icon():
 
 
 def step_up(position):
-    # increase progress bar (10 min)
-    progress['value'] += 0.1
+    progress['value'] += 0.5
     sleep(0.1)
     try:
         position_next = win32api.GetCursorPos()
         if position != position_next:
             # clear progress bar
             progress['value'] = 0
-    except pywintypes.error:
+    except error:
         pass
 
 
@@ -57,7 +55,7 @@ def clear_step():
         # perform right click
         # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, pos_next[0], pos_next[1], 0, 0)
         lbl1.config(text='X = {}   Y = {}'.format(pos_next[0], pos_next[1]))
-    except pywintypes.error:
+    except error:
         print('Cannot set new mouse position.')
 
 
@@ -67,7 +65,7 @@ def mouse_move():
         pos = win32api.GetCursorPos()
         lbl1.config(text='X = {}   Y = {}'.format(pos[0], pos[1]))
         step_up(pos)
-    except pywintypes.error:
+    except error:
         pass
     if progress['value'] > 100:
         clear_step()
